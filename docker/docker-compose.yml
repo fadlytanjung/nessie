@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_dremio
+    environment:
+      POSTGRES_USER: nessie_user
+      POSTGRES_PASSWORD: nessie_pass
+      POSTGRES_DB: nessie_db
+    ports:
+      # - "5432:5432"
+      - "6432:6432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - dremio_network
+
+  dremio:
+    image: dremio/dremio-oss:latest
+    container_name: dremio
+    ports:
+      - "9047:9047"
+      - "31010:31010"
+      - "32010:32010"
+      - "45678:45678"
+    environment:
+      DREMIO_JAVA_SERVER_MAX_HEAP_MEMORY_MB: 4096
+      DREMIO_JAVA_SERVER_MIN_HEAP_MEMORY_MB: 2048
+      DREMIO_NESSIE_CATALOG_URL: http://nessie:19120/api/v2
+    volumes:
+      - ./dremio_data:/opt/dremio/data
+    networks:
+      - dremio_network
+
+networks:
+  dremio_network:
+    driver: bridge
